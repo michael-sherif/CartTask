@@ -1,0 +1,17 @@
+{
+  "name": "cart",
+  "version": "1.0.0",
+  "description": "A Cart Example",
+  "main": "cart.js",
+  "scripts": {
+    "start": "node cart.js",
+    "test": "node cart.test.js"
+  },
+  "keywords": [
+    "Cart",
+    "JS",
+    "node"
+  ],
+  "author": "Michael Kamel",
+  "license": "ISC"
+}
