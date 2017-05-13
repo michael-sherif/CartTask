@@ -4,8 +4,8 @@
   "description": "A Cart Example",
   "main": "cart.js",
   "scripts": {
-    "start": "node cart.js",
-    "test": "node cart.test.js"
+    "start": "babel-node cart.js",
+    "test": "mocha --require babel-core/register cart.test.js"
   },
   "keywords": [
     "Cart",
@@ -13,5 +13,9 @@
     "node"
   ],
   "author": "Michael Kamel",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1"
+  }
 }

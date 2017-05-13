@@ -1,122 +1,159 @@
-var private = new WeakMap();
+const _privateStore = new WeakMap();
+const cartSingleton = Symbol();
+const cartSingletonEnforcer = Symbol();
 
 function isNumeric(n) 
 {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
-var Product = (function() 
+
+export class Product
 {
-    function Product(id, name, price) 
+    constructor({id, name, price})
     {
         if(!isNumeric(price))
             throw new Error("Price must be a numeric value");
         if(price <= 0)
-            throw new Error("Price must be more than 0");   
+            throw new Error("Price must be more than 0");
         var privateProperties = 
         {
-            id: id,
-            name: name,
-            price: price
+            id:id,
+            name:name,
+            price:price
         };
-        private.set(this, privateProperties);
+        _privateStore.set(this, privateProperties);
     }
-    Product.prototype.getId = function() 
+    get Id()
     {
-        return private.get(this).id;
-    };
-    Product.prototype.getName = function() 
+        return _privateStore.get(this).id;
+    }
+    get Name()
     {
-        return private.get(this).name;
-    };
-    Product.prototype.getPrice = function() 
+        return _privateStore.get(this).name;
+    }
+    get Price()
     {
-        return private.get(this).price;
-    };
-    Product.prototype.equals = function(product) 
+        return _privateStore.get(this).price;
+    }
+    equals(product)
     {
-        return private.get(this).id === product.getId();
-    };
-    return Product;
-}());
+        return _privateStore.get(this).id === product.Id;
+    }
+}
 
-
-var CartItem = (function() 
+class CartItem
 {
-    function CartItem(product) 
+    constructor(product)
     {
         var privateProperties = 
         {
             product: product,
             count: 1,
-            total: product.getPrice(),
-            updateTotal: () =>
-            {
-                private.get(this).total = private.get(this).product.getPrice() * private.get(this).count;
-            }
+            total: product.Price
         };
-        private.set(this, privateProperties);
+        _privateStore.set(this, privateProperties);
     }
-    CartItem.prototype.getProduct = function() 
+    get Product()
     {
-        return private.get(this).product;
-    };
-    CartItem.prototype.getCount = function() 
+        return _privateStore.get(this).product;
+    }
+    get Count()
     {
-        return private.get(this).count;
-    };
-    CartItem.prototype.getTotal = function() 
+        return _privateStore.get(this).count;
+    }
+    get Total()
     {
-        return private.get(this).total;
-    };
-    CartItem.prototype.incrementCount = function(product) 
+        return _privateStore.get(this).total;
+    }
+    _updateTotal()
     {
-        private.get(this).count++;
-        private.get(this).updateTotal();
-    };
-    CartItem.prototype.decrementCount = function(product) 
+        _privateStore.get(this).total = _privateStore.get(this).product.Price * _privateStore.get(this).count;
+    }
+    incrementCount()
     {
-        private.get(this).count--;
-        private.get(this).updateTotal();
-    };
-    return CartItem;
-}());
-
-var cartItems = [];
-
-module.exports = 
+        _privateStore.get(this).count++;
+        this._updateTotal();
+    }
+    decrementCount()
+    {
+        _privateStore.get(this).count--;
+        this._updateTotal();
+    }
+}
+export class Cart 
 {
-    Product: Product,
-    getItems: () => cartItems ,
-    hasProduct: product => !!cartItems.find(cartItem => cartItem.getProduct().equals(product)),
-    addItem: product =>
+  constructor(enforcer) 
+  {
+    if (enforcer !== cartSingletonEnforcer)
+        throw new Error('Can not construct singleton');
+    else
     {
-
-        if(!cartItems.some(cartItem => 
+        var privateProperties = 
         {
-            if(cartItem.getProduct().equals(product))
-            {
-                cartItem.incrementCount();
-                return true;
-            }
-            return false;
-        }))
-        cartItems.push(new CartItem(product));
-    },
-    removeItem: product => 
+            cartItems : []
+        };
+        _privateStore.set(this, privateProperties);
+    }
+  }
+  static get instance() 
+  {
+    if (!this[cartSingleton]) 
+      this.setInstance();
+    return this[cartSingleton];
+  }
+  static setInstance()
+  {
+      this[cartSingleton] = new Cart(cartSingletonEnforcer);
+  }
+  get Items()
+  {
+      return  _privateStore.get(this).cartItems;
+  }
+  get Total()
+  {
+      return  _privateStore.get(this).cartItems.map(cartItem => cartItem.Total).reduce((acc, cartTotal) => acc + cartTotal , 0);
+  }
+  hasProduct(product)
+  {
+      return !!_privateStore.get(this).cartItems.find(cartItem => cartItem.Product.equals(product));
+  }
+  _getItemIndex(product)
+  {
+      return _privateStore.get(this).cartItems.findIndex(cartItem => cartItem.Product.equals(product));
+  }
+  addItem(product)
+  {
+    var cartItemIndex = this._getItemIndex(product);
+    if(cartItemIndex === -1)
+        _privateStore.get(this).cartItems.push(new CartItem(product));
+    else
+        _privateStore.get(this).cartItems[cartItemIndex].incrementCount();
+  }
+  removeItem(product)
+  {
+    var cartItemIndex = this._getItemIndex(product);
+    if(cartItemIndex !== -1)
     {
-        var index = cartItems.findIndex(cartItem => cartItem.getProduct().equals(product))
-        var element = cartItems[index];
-        if(element.getCount() <= 1)
-            cartItems.splice(index, 1);
+        var cartItem = _privateStore.get(this).cartItems[cartItemIndex];
+        if(cartItem.Count <= 1)
+            _privateStore.get(this).cartItems.splice(cartItemIndex, 1);
         else
-            cartItems[index].decrementCount();
-    },
-    removeProduct: product => cartItems.splice(cartItems.findIndex(cartItem => cartItem.getProduct().equals(product)), 1),
-    getItem: product =>
-    {
-        var item = cartItems.find(cartItem => cartItem.getProduct().equals(product));
-        return item ? item: null;
-    },
-    getTotal: () => cartItems.map(cartItem => cartItem.getTotal()).reduce((acc, cartTotal) => acc + cartTotal , 0),
-    clearCart: () => { cartItems = []; }
+            cartItem.decrementCount();
+    }
+  }
+  clearCart()
+  {
+      _privateStore.get(this).cartItems = [];
+  }
+  removeProduct(product)
+  {
+    var cartItemIndex = this._getItemIndex(product);
+    if(cartItemIndex !== -1)
+         _privateStore.get(this).cartItems.splice(cartItemIndex, 1);
+  }
+  getItem(product)
+  {
+    var item =  _privateStore.get(this).cartItems.find(cartItem => cartItem.Product.equals(product));
+    return item ? item : null;
+  }
 }
