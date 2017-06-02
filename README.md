@@ -3,4 +3,4 @@
 **Use `npm test` to run tests.**
 
 [![Coverage Status](https://coveralls.io/repos/michael-sherif/CartTask/badge.svg?branch=master)](https://coveralls.io/r/michael-sherif/CartTask?branch=master)
-[![Build Status]](https://travis-ci.org/michael-sherif/CartTask.svg?branch=master)
+[![Build Status](https://travis-ci.org/michael-sherif/CartTask.svg?branch=master)
