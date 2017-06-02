@@ -60,3 +60,6 @@ typings/
 
 #coveralls
 .coveralls.yml
+
+#snyk
+.snyk

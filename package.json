@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "A Cart Example",
   "main": "cart.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/michael-sherif/CartTask.git"
+  },
   "scripts": {
     "start": "babel-node cart.js",
-    "test": "./node_modules/babel-istanbul/lib/cli.js cover ./node_modules/.bin/_mocha cart.test.js",
+    "test": "snyk test && ./node_modules/babel-istanbul/lib/cli.js cover ./node_modules/.bin/_mocha cart.test.js",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "keywords": [
@@ -21,6 +25,7 @@
     "babel-preset-es2015": "^6.24.1",
     "coveralls": "^2.13.1",
     "mocha": "^3.4.2",
-    "mocha-lcov-reporter": "^1.3.0"
+    "mocha-lcov-reporter": "^1.3.0",
+    "snyk": "^1.30.2"
   }
 }
